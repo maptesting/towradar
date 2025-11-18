@@ -110,32 +110,12 @@ export default function TeamPage() {
   }
 
   async function handleInvite() {
-    if (!companyId || !inviteEmail.trim()) return;
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      // In a real app, you would:
-      // 1. Send an invitation email with a signup link
-      // 2. Include a token that associates the new user with this company
-      // 3. When they sign up, automatically add them to company_users
-      
-      // For now, we'll just show a message explaining this
-      setErrorMsg(
-        `Team invites require email integration. To add "${inviteEmail}" as a ${inviteRole}, they need to:\n1. Sign up at /auth\n2. You'll manually add them using their user ID.`
-      );
-      
-      // TODO: Implement email invitation system
-      // This would typically use a service like SendGrid or Resend
-      // and create a pending_invitations table
-      
-    } catch (err) {
-      console.error("Invite error:", err);
-      setErrorMsg("Error sending invitation.");
-    }
-
-    setLoading(false);
+    // For now, just show info message - email integration not implemented yet
+    alert(
+      `📧 Email invitations coming soon!\n\nFor now, to add "${inviteEmail}" as a ${inviteRole}:\n\n1. Have them sign up at ${window.location.origin}/auth\n2. They'll need to create their own company first\n3. Once they have an account, you can coordinate manually\n\nFull team invitation system will be added in a future update!`
+    );
+    setShowAddModal(false);
+    setInviteEmail("");
   }
 
   async function handleRemoveMember(memberId: string) {
@@ -368,11 +348,6 @@ export default function TeamPage() {
                   <option value="dispatcher">Dispatcher</option>
                 </select>
               </div>
-
-              <p className="text-xs text-slate-400 bg-slate-950/60 border border-slate-800 rounded-md p-3">
-                📧 Email invitations are coming soon! For now, have team members sign
-                up at /auth, then you can add them manually.
-              </p>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -388,10 +363,10 @@ export default function TeamPage() {
               </button>
               <button
                 onClick={handleInvite}
-                disabled={loading || !inviteEmail.trim()}
+                disabled={!inviteEmail.trim()}
                 className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Sending..." : "Send Invite"}
+                Preview Invite
               </button>
             </div>
           </div>
