@@ -1,5 +1,6 @@
 // pages/_app.tsx
 import "../styles/globals.css";
+import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 
