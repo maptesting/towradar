@@ -1,0 +1,402 @@
+// pages/team.tsx
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Nav from "../components/Nav";
+import { supabase } from "../lib/supabaseClient";
+
+type TeamMember = {
+  id: string;
+  user_id: string;
+  role: "owner" | "driver" | "dispatcher";
+  created_at: string;
+};
+
+export default function TeamPage() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Form state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"driver" | "dispatcher">("driver");
+
+  // Auth check
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user;
+      if (!user) {
+        router.replace("/auth");
+        return;
+      }
+      setUserId(user.id);
+      setAuthChecked(true);
+    })();
+  }, [router]);
+
+  // Load company and role
+  useEffect(() => {
+    if (!authChecked || !userId) return;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Company load error:", error);
+        setErrorMsg("Error loading company profile.");
+        return;
+      }
+
+      if (!data) {
+        setErrorMsg("No company profile found. Please set up your company first.");
+        return;
+      }
+
+      setCompanyId(data.id);
+
+      // Get user role
+      const { data: roleData } = await supabase
+        .from("company_users")
+        .select("role")
+        .eq("company_id", data.id)
+        .eq("user_id", userId)
+        .single();
+
+      if (roleData) {
+        setUserRole(roleData.role);
+      }
+    })();
+  }, [authChecked, userId]);
+
+  // Load team members
+  useEffect(() => {
+    if (!companyId) return;
+    loadTeam();
+  }, [companyId]);
+
+  async function loadTeam() {
+    if (!companyId) return;
+    setLoading(true);
+    setErrorMsg(null);
+
+    const { data, error } = await supabase
+      .from("company_users")
+      .select("*")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Team load error:", error);
+      setErrorMsg("Error loading team members.");
+      setTeamMembers([]);
+      setLoading(false);
+      return;
+    }
+
+    // For now, just show user IDs (email lookup would require server-side API)
+    // In production, you'd fetch emails from a server endpoint
+    setTeamMembers(data || []);
+    setLoading(false);
+  }
+
+  async function handleInvite() {
+    if (!companyId || !inviteEmail.trim()) return;
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      // In a real app, you would:
+      // 1. Send an invitation email with a signup link
+      // 2. Include a token that associates the new user with this company
+      // 3. When they sign up, automatically add them to company_users
+      
+      // For now, we'll just show a message explaining this
+      setErrorMsg(
+        `Team invites require email integration. To add "${inviteEmail}" as a ${inviteRole}, they need to:\n1. Sign up at /auth\n2. You'll manually add them using their user ID.`
+      );
+      
+      // TODO: Implement email invitation system
+      // This would typically use a service like SendGrid or Resend
+      // and create a pending_invitations table
+      
+    } catch (err) {
+      console.error("Invite error:", err);
+      setErrorMsg("Error sending invitation.");
+    }
+
+    setLoading(false);
+  }
+
+  async function handleRemoveMember(memberId: string) {
+    if (
+      !confirm(
+        "Are you sure you want to remove this member from your team?"
+      )
+    )
+      return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("company_users")
+      .delete()
+      .eq("id", memberId);
+
+    if (error) {
+      console.error("Remove error:", error);
+      setErrorMsg("Error removing team member.");
+    } else {
+      loadTeam();
+    }
+
+    setLoading(false);
+  }
+
+  async function handleChangeRole(memberId: string, newRole: string) {
+    setLoading(true);
+    const { error } = await supabase
+      .from("company_users")
+      .update({ role: newRole })
+      .eq("id", memberId);
+
+    if (error) {
+      console.error("Role update error:", error);
+      setErrorMsg("Error updating role.");
+    } else {
+      loadTeam();
+    }
+
+    setLoading(false);
+  }
+
+  const roleColors = {
+    owner: "bg-purple-500/10 text-purple-300 border-purple-500/40",
+    driver: "bg-blue-500/10 text-blue-300 border-blue-500/40",
+    dispatcher: "bg-emerald-500/10 text-emerald-300 border-emerald-500/40",
+  };
+
+  const roleLabels = {
+    owner: "Owner",
+    driver: "Driver",
+    dispatcher: "Dispatcher",
+  };
+
+  const isOwner = userRole === "owner";
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+      <Nav />
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-semibold">Team Management</h1>
+              <p className="text-sm text-slate-400">
+                Manage your team members and roles
+              </p>
+            </div>
+            {isOwner && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm"
+              >
+                + Invite Member
+              </button>
+            )}
+          </header>
+
+          {!isOwner && (
+            <p className="text-sm text-yellow-400 border border-yellow-500/40 bg-yellow-950/40 rounded-md px-3 py-2">
+              Only owners can manage team members.
+            </p>
+          )}
+
+          {errorMsg && (
+            <div className="text-sm text-amber-300 border border-amber-500/40 bg-amber-950/40 rounded-md px-3 py-2 whitespace-pre-line">
+              {errorMsg}
+            </div>
+          )}
+
+          <div className="border border-slate-800 bg-slate-950/80 rounded-xl overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-slate-900/80 border-b border-slate-800">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Member
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Joined
+                  </th>
+                  {isOwner && (
+                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {teamMembers.map((member) => (
+                  <tr key={member.id} className="hover:bg-slate-900/40">
+                    <td className="px-4 py-3">
+                      <p className="text-sm text-slate-100 font-mono text-xs">{member.user_id}</p>
+                      <p className="text-xs text-slate-500">
+                        {member.user_id === userId && "(You)"}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {isOwner && member.user_id !== userId ? (
+                        <select
+                          value={member.role}
+                          onChange={(e) =>
+                            handleChangeRole(member.id, e.target.value)
+                          }
+                          className="px-2 py-1 rounded-full text-xs font-medium border bg-slate-900 border-slate-700 text-slate-300"
+                        >
+                          <option value="driver">Driver</option>
+                          <option value="dispatcher">Dispatcher</option>
+                          <option value="owner">Owner</option>
+                        </select>
+                      ) : (
+                        <span
+                          className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${
+                            roleColors[member.role]
+                          }`}
+                        >
+                          {roleLabels[member.role]}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-400">
+                      {new Date(member.created_at).toLocaleDateString()}
+                    </td>
+                    {isOwner && (
+                      <td className="px-4 py-3 text-right">
+                        {member.user_id !== userId && (
+                          <button
+                            onClick={() =>
+                              handleRemoveMember(member.id)
+                            }
+                            className="px-3 py-1 rounded-md bg-rose-900/40 hover:bg-rose-900/60 text-rose-300 text-xs"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+
+                {teamMembers.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={isOwner ? 4 : 3}
+                      className="px-4 py-8 text-center text-slate-400"
+                    >
+                      No team members yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="border border-slate-800 bg-slate-900/40 rounded-xl p-4">
+            <h3 className="text-sm font-medium text-slate-300 mb-2">
+              Role Descriptions
+            </h3>
+            <ul className="space-y-1 text-xs text-slate-400">
+              <li>
+                <span className="font-medium text-purple-300">Owner:</span> Full
+                access to manage company, fleet, team, and incidents
+              </li>
+              <li>
+                <span className="font-medium text-blue-300">Driver:</span> Can view
+                and claim incidents, manage assigned jobs
+              </li>
+              <li>
+                <span className="font-medium text-emerald-300">Dispatcher:</span>{" "}
+                Can manage all incidents and assign drivers
+              </li>
+            </ul>
+          </div>
+        </div>
+      </main>
+
+      {/* Invite Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">Invite Team Member</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  placeholder="driver@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Role</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) =>
+                    setInviteRole(e.target.value as "driver" | "dispatcher")
+                  }
+                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                >
+                  <option value="driver">Driver</option>
+                  <option value="dispatcher">Dispatcher</option>
+                </select>
+              </div>
+
+              <p className="text-xs text-slate-400 bg-slate-950/60 border border-slate-800 rounded-md p-3">
+                📧 Email invitations are coming soon! For now, have team members sign
+                up at /auth, then you can add them manually.
+              </p>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setInviteEmail("");
+                  setErrorMsg(null);
+                }}
+                className="flex-1 px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInvite}
+                disabled={loading || !inviteEmail.trim()}
+                className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Sending..." : "Send Invite"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
