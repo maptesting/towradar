@@ -23,4 +23,4 @@ Write-Host "The task will run every 15 minutes automatically in the background."
 Write-Host "You can close all windows - it will keep running!" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "To view/manage: Open Task Scheduler > Task Scheduler Library > $taskName" -ForegroundColor Yellow
-Write-Host "To remove: Run 'Unregister-ScheduledTask -TaskName $taskName -Confirm:`$false'" -ForegroundColor Yellow
+Write-Host "To remove: Run Unregister-ScheduledTask -TaskName $taskName -Confirm:false" -ForegroundColor Yellow

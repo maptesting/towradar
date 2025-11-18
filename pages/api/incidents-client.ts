@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 // Client for data queries (with service role)
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const minutesSchema = z.preprocess((v) => Number(v), z.number().int().min(1).max(60 * 24).optional());
+const minutesSchema = z.preprocess((v) => Number(v), z.number().int().min(1).max(60 * 24 * 30).optional());
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {

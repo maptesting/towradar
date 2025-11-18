@@ -308,11 +308,18 @@ export default function HistoryPage() {
               </div>
               <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-2">
                 <div className="h-[420px] w-full rounded-lg overflow-hidden">
-                  <MapPanel
-                    incidents={incidents as any}
-                    center={center}
-                    radiusKm={radiusKm}
-                  />
+                  {incidents.length > 0 && (
+                    <MapPanel
+                      incidents={incidents as any}
+                      center={center}
+                      radiusKm={radiusKm}
+                    />
+                  )}
+                  {incidents.length === 0 && (
+                    <div className="flex items-center justify-center h-full text-slate-400">
+                      No incidents to display
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
