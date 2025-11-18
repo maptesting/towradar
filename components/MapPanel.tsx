@@ -70,12 +70,11 @@ const MapPanel = memo(function MapPanel({ incidents, center, radiusKm }: Props) 
   const mapCenter: LatLngExpression = [center.lat, center.lng];
 
   return (
-    <div>
+    <div style={{ height: "100%", width: "100%" }}>
       <MapContainer
         center={mapCenter as [number, number]}
         zoom={zoom}
         scrollWheelZoom={false}
-        className="h-full w-full"
         style={{ height: "100%", width: "100%" }}
       >
         <ResizeHandler />
