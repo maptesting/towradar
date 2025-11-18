@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import ProfileDropdown from "./ProfileDropdown";
 
 type SimpleUser = {
   id: string;
@@ -110,17 +111,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-3 text-xs">
           {!loading && user && (
-            <>
-              <span className="hidden sm:inline text-slate-400">
-                {user.email || "Account"}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700/60"
-              >
-                Sign out
-              </button>
-            </>
+            <ProfileDropdown userEmail={user.email} onLogout={handleLogout} />
           )}
 
           {/* Show Login only when NOT logged in */}
