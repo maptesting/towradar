@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Nav from "../components/Nav";
 import { supabase } from "../lib/supabaseClient";
+import { classifyIncident, CATEGORY_LABEL, CATEGORY_BADGE_CLASS, CLAIM_BADGE_CLASS } from "../lib/utils";
 
 const MapPanel = dynamic(() => import("../components/MapPanel"), {
   ssr: false,
@@ -54,45 +55,6 @@ type Alert = {
   title: string;
   body: string;
   createdAt: string; // ISO string
-};
-
-function classifyIncident(i: Incident): IncidentCategory {
-  const t = (i.type || "").toLowerCase();
-  const d = (i.description || "").toLowerCase();
-
-  if (t.includes("crash") || t.includes("accident")) return "crash";
-  if (t.includes("disabled") || d.includes("disabled")) return "disabled";
-  if (t.includes("hazard") || d.includes("hazard")) return "hazard";
-  if (t.includes("closure") || t.includes("lane closed")) return "closure";
-  return "other";
-}
-
-const CATEGORY_LABEL: Record<IncidentCategory, string> = {
-  crash: "Crash",
-  disabled: "Disabled vehicle",
-  hazard: "Hazard",
-  closure: "Closure / lanes",
-  other: "Other",
-};
-
-const CATEGORY_BADGE_CLASS: Record<IncidentCategory, string> = {
-  crash:
-    "bg-rose-500/15 text-rose-300 border border-rose-500/40",
-  disabled:
-    "bg-emerald-500/15 text-emerald-300 border border-emerald-500/40",
-  hazard:
-    "bg-amber-500/15 text-amber-300 border border-amber-500/40",
-  closure:
-    "bg-sky-500/15 text-sky-300 border border-sky-500/40",
-  other:
-    "bg-violet-500/15 text-violet-300 border border-violet-500/40",
-};
-
-const CLAIM_BADGE_CLASS: Record<ClaimStatus, string> = {
-  claimed:
-    "bg-emerald-500/15 text-emerald-300 border border-emerald-500/40",
-  completed:
-    "bg-slate-500/20 text-slate-300 border border-slate-500/40",
 };
 
 export default function Dashboard() {
@@ -219,7 +181,12 @@ export default function Dashboard() {
       setErrorMsg(null);
 
       try {
-        const res = await fetch(`/api/incidents?minutes=${m}`);
+        const { data: { session } = {} } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        const res = await fetch(`/api/incidents-client?minutes=${m}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const json = await res.json();
 
         if (!res.ok) {
@@ -335,31 +302,36 @@ export default function Dashboard() {
     fetchIncidents();
   }, [company, minutes, fetchIncidents]);
 
-  // -------- Realtime subscription --------
+  // -------- Realtime subscription with debouncing --------
   useEffect(() => {
     if (!company?.id) return;
+
+    let debounceTimer: NodeJS.Timeout | null = null;
+
+    const debouncedFetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchIncidents();
+        setLiveTick((n) => n + 1);
+      }, 1000); // Wait 1s before fetching to batch rapid updates
+    };
 
     const channel = supabase
       .channel("incidents-live")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "incidents" },
-        () => {
-          fetchIncidents();
-          setLiveTick((n) => n + 1);
-        }
+        debouncedFetch
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "incidents" },
-        () => {
-          fetchIncidents();
-          setLiveTick((n) => n + 1);
-        }
+        debouncedFetch
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [company?.id, fetchIncidents]);
@@ -430,10 +402,14 @@ export default function Dashboard() {
     setSavingClaimId(null);
   }
 
-  const center = company
-    ? { lat: company.base_lat, lng: company.base_lng }
-    : { lat: 35.227085, lng: -80.843124 };
-  const radiusKm = company?.radius_km ?? 40;
+  const center = useMemo(
+    () =>
+      company
+        ? { lat: company.base_lat, lng: company.base_lng }
+        : { lat: 35.227085, lng: -80.843124 },
+    [company]
+  );
+  const radiusKm = useMemo(() => company?.radius_km ?? 40, [company?.radius_km]);
 
   // -------- Alert helpers --------
   function dismissAlert(id: string) {

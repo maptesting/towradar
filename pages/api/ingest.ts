@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { fetchCharlotteIncidents } from "../../lib/incidentSources/ncCharlotte";
 import { IncidentInput } from "../../lib/types";
+import { apiRatelimit } from "../../lib/ratelimit";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,12 +25,18 @@ export default async function handler(
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ ok: false, error: "Unauthorized" });
-  }
-
   try {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+    const { success } = await apiRatelimit.limit(String(ip));
+    if (!success) {
+      return res.status(429).json({ ok: false, error: "Rate limit exceeded" });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!cronSecret || !authHeader || authHeader !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ ok: false, error: "Unauthorized" });
+    }
+
     const allIncidents: IncidentInput[] = [];
     const cltIncidents = await fetchCharlotteIncidents();
     console.log("NC TIMS Mecklenburg returned:", cltIncidents.length, "items");

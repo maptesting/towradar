@@ -2,6 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import twilio from "twilio";
+import { haversineDistanceKm } from "../../lib/utils";
+import { apiRatelimit } from "../../lib/ratelimit";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -44,25 +46,6 @@ type Incident = {
   state: string | null;
   occurred_at: string;
 };
-
-function haversineDistanceKm(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371;
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 async function sendEmailAlert(
   to: string,
@@ -149,12 +132,17 @@ export default async function handler(
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ ok: false, error: "Unauthorized" });
-  }
-
   try {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+    const { success } = await apiRatelimit.limit(String(ip));
+    if (!success) {
+      return res.status(429).json({ ok: false, error: "Rate limit exceeded" });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!cronSecret || !authHeader || authHeader !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ ok: false, error: "Unauthorized" });
+    }
     // Get all companies
     const { data: companies, error: companyError } = await supabase
       .from("companies")
@@ -191,14 +179,14 @@ export default async function handler(
 
     for (const company of companies as Company[]) {
       const relevant = (incidents as Incident[]).filter((inc) => {
-        const d = haversineDistanceKm(
-          company.base_lat,
-          company.base_lng,
-          inc.lat,
-          inc.lng
-        );
-        return d <= company.radius_km;
-      });
+          const d = haversineDistanceKm(
+            company.base_lat,
+            company.base_lng,
+            inc.lat,
+            inc.lng
+          );
+          return d <= company.radius_km;
+        });
 
       if (relevant.length === 0) continue;
 
