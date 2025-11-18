@@ -100,6 +100,20 @@ export default function Dashboard() {
 
     (async () => {
       setErrorMsg(null);
+
+      // Check if user is a driver first
+      const { data: roleData } = await supabase
+        .from("company_users")
+        .select("role, company_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      // If they're a driver (not owner), redirect to driver dashboard
+      if (roleData && roleData.role === "driver") {
+        router.replace("/driver-dashboard");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("companies")
         .select(
