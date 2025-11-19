@@ -208,20 +208,20 @@ export default function TrucksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+    <div className="min-h-screen text-slate-50 flex flex-col">
       <Nav />
       <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold">Fleet Management</h1>
-              <p className="text-sm text-slate-400">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Fleet Management</h1>
+              <p className="text-base text-slate-400 mt-2">
                 Manage your tow trucks and their status
               </p>
             </div>
             <button
               onClick={openAddModal}
-              className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm"
+              className="px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform"
             >
               + Add Truck
             </button>
@@ -234,11 +234,11 @@ export default function TrucksPage() {
           )}
 
           {!loading && trucks.length === 0 && (
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-8 text-center">
-              <p className="text-slate-400 mb-4">No trucks added yet</p>
+            <div className="glass-strong rounded-2xl p-12 text-center border border-slate-700/50">
+              <p className="text-slate-300 mb-6 text-lg">No trucks added yet</p>
               <button
                 onClick={openAddModal}
-                className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm"
+                className="px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform"
               >
                 Add Your First Truck
               </button>
@@ -246,11 +246,11 @@ export default function TrucksPage() {
           )}
 
           {trucks.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {trucks.map((truck) => (
                 <div
                   key={truck.id}
-                  className="border border-slate-800 bg-slate-950/80 rounded-xl p-4 hover:border-slate-700 transition-colors"
+                  className="glass-strong rounded-2xl p-5 border border-slate-700/50 hover:border-slate-600/50 transition-colors"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -283,16 +283,16 @@ export default function TrucksPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => openEditModal(truck)}
-                      className="flex-1 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs"
+                      className="flex-1 px-4 py-2 rounded-lg glass border border-slate-700/50 hover:bg-white/5 text-slate-100 text-sm font-medium transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(truck.id)}
-                      className="px-3 py-1.5 rounded-md bg-rose-900/40 hover:bg-rose-900/60 text-rose-300 text-xs"
+                      className="px-4 py-2 rounded-lg glass border border-rose-500/50 hover:bg-rose-500/10 text-rose-300 text-sm font-medium transition-colors"
                     >
                       Delete
                     </button>
@@ -306,15 +306,15 @@ export default function TrucksPage() {
 
       {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="glass-strong border border-slate-700/50 rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
               {editingTruck ? "Edit Truck" : "Add New Truck"}
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Truck Name <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -323,14 +323,14 @@ export default function TrucksPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   placeholder="e.g., Tow Truck #1"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     License Plate
                   </label>
                   <input
@@ -339,13 +339,13 @@ export default function TrucksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, license_plate: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     placeholder="ABC-1234"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) =>
@@ -354,7 +354,7 @@ export default function TrucksPage() {
                         status: e.target.value as Truck["status"],
                       })
                     }
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   >
                     <option value="available">Available</option>
                     <option value="on_job">On Job</option>
@@ -366,83 +366,83 @@ export default function TrucksPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1">Make</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Make</label>
                   <input
                     type="text"
                     value={formData.make}
                     onChange={(e) =>
                       setFormData({ ...formData, make: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     placeholder="Ford"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1">Model</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Model</label>
                   <input
                     type="text"
                     value={formData.model}
                     onChange={(e) =>
                       setFormData({ ...formData, model: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     placeholder="F-550"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1">Year</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Year</label>
                   <input
                     type="number"
                     value={formData.year}
                     onChange={(e) =>
                       setFormData({ ...formData, year: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     placeholder="2023"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-1">VIN</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">VIN</label>
                 <input
                   type="text"
                   value={formData.vin}
                   onChange={(e) =>
                     setFormData({ ...formData, vin: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   placeholder="1FTRF3A69HED12345"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   rows={3}
                   placeholder="Any additional notes..."
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-4 mt-8">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100"
+                className="flex-1 px-6 py-3 rounded-lg glass border border-slate-700/50 hover:bg-white/5 text-slate-100 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={loading || !formData.name.trim()}
-                className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {loading ? "Saving..." : editingTruck ? "Update" : "Add Truck"}
               </button>
