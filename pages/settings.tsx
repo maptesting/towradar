@@ -157,39 +157,39 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen text-slate-100">
       <Nav />
 
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-100 mb-2">Settings</h1>
-          <p className="text-slate-400">Manage your notification preferences</p>
+      <div className="max-w-5xl mx-auto px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent mb-3">Settings</h1>
+          <p className="text-base text-slate-400">Manage your notification preferences</p>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-4 bg-red-900/20 border border-red-700 rounded-lg text-red-400">
+          <div className="mb-6 p-5 glass-strong border border-rose-500/50 rounded-2xl text-rose-400 shadow-glow">
             {errorMsg}
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-4 bg-emerald-900/20 border border-emerald-700 rounded-lg text-emerald-400">
+          <div className="mb-6 p-5 glass-strong border border-emerald-500/50 rounded-2xl text-emerald-400 shadow-glow">
             {successMsg}
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-slate-400">Loading settings...</div>
+          <div className="text-center py-16 text-slate-400 text-lg">Loading settings...</div>
         ) : (
           <div className="space-y-6">
             {/* Browser Permission */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Browser Notifications</h2>
+            <div className="glass-strong rounded-2xl p-6 border border-slate-700/50">
+              <h2 className="text-2xl font-bold mb-6 text-slate-200">Browser Notifications</h2>
               
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-slate-300 font-medium">Browser Permission</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-slate-200 font-semibold text-lg">Browser Permission</p>
+                  <p className="text-sm text-slate-400 mt-2">
                     {browserPermission === "granted" && "✅ Notifications are enabled"}
                     {browserPermission === "denied" && "❌ Notifications are blocked"}
                     {browserPermission === "default" && "⚠️ Notifications not yet allowed"}
@@ -198,7 +198,7 @@ export default function Settings() {
                 {browserPermission !== "granted" && (
                   <button
                     onClick={handleRequestPermission}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-medium transition-colors"
+                    className="px-6 py-3 gradient-emerald rounded-lg text-white font-semibold shadow-glow hover:scale-105 transition-transform"
                   >
                     Enable Notifications
                   </button>
@@ -206,22 +206,22 @@ export default function Settings() {
               </div>
 
               {browserPermission === "denied" && (
-                <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg text-yellow-400 text-sm">
+                <div className="mt-4 p-4 glass rounded-xl border border-amber-500/50 text-amber-300 text-sm bg-gradient-to-br from-amber-500/10 to-transparent">
                   <strong>Note:</strong> You've blocked notifications. To enable them, click the lock icon in your browser's address bar and allow notifications for this site.
                 </div>
               )}
             </div>
 
             {/* Notification Settings */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Notification Preferences</h2>
+            <div className="glass-strong rounded-2xl p-6 border border-slate-700/50">
+              <h2 className="text-2xl font-bold mb-6 text-slate-200">Notification Preferences</h2>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Enable Notifications */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-4 glass rounded-xl border border-slate-700/50">
                   <div>
-                    <p className="text-slate-300 font-medium">Enable Notifications</p>
-                    <p className="text-sm text-slate-500">Receive alerts for new incidents and job updates</p>
+                    <p className="text-slate-200 font-semibold text-lg">Enable Notifications</p>
+                    <p className="text-sm text-slate-400 mt-1">Receive alerts for new incidents and job updates</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -230,15 +230,15 @@ export default function Settings() {
                       onChange={(e) => setSettings({ ...settings, notifications_enabled: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <div className="w-14 h-7 glass peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-teal-500 shadow-glow"></div>
                   </label>
                 </div>
 
                 {/* Enable Sound */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-4 glass rounded-xl border border-slate-700/50">
                   <div>
-                    <p className="text-slate-300 font-medium">Enable Sound</p>
-                    <p className="text-sm text-slate-500">Play sound for high-priority notifications</p>
+                    <p className="text-slate-200 font-semibold text-lg">Enable Sound</p>
+                    <p className="text-sm text-slate-400 mt-1">Play sound for high-priority notifications</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -247,39 +247,39 @@ export default function Settings() {
                       onChange={(e) => setSettings({ ...settings, sound_enabled: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <div className="w-14 h-7 glass peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-teal-500 shadow-glow"></div>
                   </label>
                 </div>
 
                 {/* Quiet Hours */}
-                <div className="pt-4 border-t border-slate-800">
-                  <p className="text-slate-300 font-medium mb-3">Quiet Hours</p>
-                  <p className="text-sm text-slate-500 mb-4">No notifications during these hours (optional)</p>
+                <div className="p-4 glass rounded-xl border border-slate-700/50">
+                  <p className="text-slate-200 font-semibold text-lg mb-2">Quiet Hours</p>
+                  <p className="text-sm text-slate-400 mb-5">No notifications during these hours (optional)</p>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">Start Time</label>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Start Time</label>
                       <input
                         type="time"
                         value={settings.quiet_hours_start || ""}
                         onChange={(e) => setSettings({ ...settings, quiet_hours_start: e.target.value || null })}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-4 py-3 glass border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">End Time</label>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">End Time</label>
                       <input
                         type="time"
                         value={settings.quiet_hours_end || ""}
                         onChange={(e) => setSettings({ ...settings, quiet_hours_end: e.target.value || null })}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-4 py-3 glass border border-slate-700/50 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                       />
                     </div>
                   </div>
                   
                   {settings.quiet_hours_start && settings.quiet_hours_end && (
-                    <p className="mt-2 text-xs text-slate-500">
-                      No notifications between {settings.quiet_hours_start} and {settings.quiet_hours_end}
+                    <p className="mt-3 text-sm text-emerald-400">
+                      🌙 No notifications between {settings.quiet_hours_start} and {settings.quiet_hours_end}
                     </p>
                   )}
                 </div>
@@ -287,17 +287,17 @@ export default function Settings() {
             </div>
 
             {/* Save Button */}
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-4 pt-4">
               <button
                 onClick={() => router.back()}
-                className="px-6 py-2 border border-slate-700 hover:bg-slate-800 rounded-lg text-slate-300 font-medium transition-colors"
+                className="px-8 py-3 glass border border-slate-700/50 hover:bg-white/5 rounded-lg text-slate-300 font-semibold transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg text-white font-medium transition-colors"
+                className="px-8 py-3 gradient-emerald disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-semibold shadow-glow hover:scale-105 transition-transform disabled:hover:scale-100"
               >
                 {saving ? "Saving..." : "Save Settings"}
               </button>
