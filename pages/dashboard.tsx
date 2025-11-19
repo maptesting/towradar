@@ -94,6 +94,14 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [liveTick, setLiveTick] = useState(0);
 
+  // Truck assignment modal state
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimingIncident, setClaimingIncident] = useState<Incident | null>(null);
+  const [trucks, setTrucks] = useState<Array<{ id: string; name: string; status: string }>>([]);
+  const [drivers, setDrivers] = useState<Array<{ id: string; user_id: string }>>([]);
+  const [selectedTruckId, setSelectedTruckId] = useState<string>("");
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("");
+
   // -------- Load company --------
   useEffect(() => {
     if (!authChecked || !userId) return;
@@ -386,30 +394,126 @@ export default function Dashboard() {
     };
   }, [filtered]);
 
-  // -------- Claim actions --------
-  async function handleClaimToggle(incident: Incident) {
+  // -------- Load trucks and drivers --------
+  useEffect(() => {
     if (!company?.id) return;
 
-    const current = incident.claim_status;
-    const next: ClaimStatus =
-      current === "claimed" ? "completed" : "claimed";
+    (async () => {
+      // Load trucks
+      const { data: trucksData } = await supabase
+        .from("trucks")
+        .select("id, name, status")
+        .eq("company_id", company.id)
+        .eq("status", "available")
+        .order("name");
+
+      if (trucksData) {
+        setTrucks(trucksData);
+      }
+
+      // Load drivers
+      const { data: driversData } = await supabase
+        .from("company_users")
+        .select("id, user_id")
+        .eq("company_id", company.id)
+        .eq("role", "driver");
+
+      if (driversData) {
+        setDrivers(driversData);
+      }
+    })();
+  }, [company?.id]);
+
+  // -------- Claim actions --------
+  function openClaimModal(incident: Incident) {
+    setClaimingIncident(incident);
+    setSelectedTruckId("");
+    setSelectedDriverId("");
+    setShowClaimModal(true);
+  }
+
+  async function handleClaimSubmit() {
+    if (!company?.id || !claimingIncident || !selectedTruckId) return;
+
+    setSavingClaimId(claimingIncident.id);
+    setShowClaimModal(false);
+
+    // Update claim with truck and driver assignment
+    const { error: claimError } = await supabase
+      .from("company_incident_claims")
+      .upsert(
+        {
+          company_id: company.id,
+          incident_id: claimingIncident.id,
+          status: "claimed",
+          truck_id: selectedTruckId,
+          driver_user_id: selectedDriverId || null,
+          claimed_at: new Date().toISOString(),
+          note: claimingIncident.claim_note ?? null,
+        },
+        {
+          onConflict: "company_id,incident_id",
+        }
+      );
+
+    if (claimError) {
+      console.error("Claim error:", claimError);
+      setErrorMsg("Error claiming incident.");
+      setSavingClaimId(null);
+      return;
+    }
+
+    // Update truck status to on_job
+    const { error: truckError } = await supabase
+      .from("trucks")
+      .update({ status: "on_job", updated_at: new Date().toISOString() })
+      .eq("id", selectedTruckId);
+
+    if (truckError) {
+      console.error("Truck update error:", truckError);
+    }
+
+    await fetchIncidents();
+    setSavingClaimId(null);
+    setClaimingIncident(null);
+  }
+
+  async function handleMarkComplete(incident: Incident) {
+    if (!company?.id) return;
 
     setSavingClaimId(incident.id);
 
-    const { error } = await supabase.from("company_incident_claims").upsert(
-      {
-        company_id: company.id,
-        incident_id: incident.id,
-        status: next,
-        note: incident.claim_note ?? null,
-      },
-      {
-        onConflict: "company_id,incident_id",
-      }
-    );
+    // Get the truck_id from the claim
+    const { data: claimData } = await supabase
+      .from("company_incident_claims")
+      .select("truck_id")
+      .eq("company_id", company.id)
+      .eq("incident_id", incident.id)
+      .single();
 
-    if (error) {
-      console.error("Claim upsert error:", error);
+    // Mark claim as completed
+    const { error: claimError } = await supabase
+      .from("company_incident_claims")
+      .update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+      })
+      .eq("company_id", company.id)
+      .eq("incident_id", incident.id);
+
+    if (claimError) {
+      console.error("Complete error:", claimError);
+      setErrorMsg("Error marking complete.");
+      setSavingClaimId(null);
+      return;
+    }
+
+    // Set truck back to available
+    if (claimData?.truck_id) {
+      await supabase
+        .from("trucks")
+        .update({ status: "available", updated_at: new Date().toISOString() })
+        .eq("id", claimData.truck_id);
     }
 
     await fetchIncidents();
@@ -649,17 +753,21 @@ export default function Dashboard() {
                           {inc.distanceKm?.toFixed(1) ?? "–"}
                         </td>
                         <td className="py-1.5 pr-0 text-right">
-                          {!claimStatus || claimStatus === "claimed" ? (
+                          {!claimStatus ? (
                             <button
-                              onClick={() => handleClaimToggle(inc)}
+                              onClick={() => openClaimModal(inc)}
                               disabled={savingClaimId === inc.id}
                               className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-[11px] text-white disabled:bg-emerald-800"
                             >
-                              {savingClaimId === inc.id
-                                ? "Saving…"
-                                : claimStatus === "claimed"
-                                ? "Mark done"
-                                : "Claim"}
+                              {savingClaimId === inc.id ? "Saving…" : "Claim"}
+                            </button>
+                          ) : claimStatus === "claimed" ? (
+                            <button
+                              onClick={() => handleMarkComplete(inc)}
+                              disabled={savingClaimId === inc.id}
+                              className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-[11px] text-white disabled:bg-blue-800"
+                            >
+                              {savingClaimId === inc.id ? "Saving…" : "Mark done"}
                             </button>
                           ) : (
                             <span className="text-[11px] text-slate-500">
@@ -700,6 +808,97 @@ export default function Dashboard() {
           </section>
         </div>
       </main>
+
+      {/* Claim Modal */}
+      {showClaimModal && claimingIncident && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full">
+            <h2 className="text-xl font-semibold mb-4">Claim Incident</h2>
+
+            <div className="space-y-4">
+              {/* Incident details */}
+              <div className="border border-slate-800 bg-slate-950/60 rounded-lg p-3">
+                <p className="text-sm font-medium text-slate-100 mb-1">
+                  {claimingIncident.road || "Unknown location"}
+                </p>
+                <p className="text-xs text-slate-400">
+                  {claimingIncident.description || "No details"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {claimingIncident.distanceKm?.toFixed(1)} km away
+                </p>
+              </div>
+
+              {/* Truck selection */}
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">
+                  Select Truck <span className="text-rose-400">*</span>
+                </label>
+                <select
+                  value={selectedTruckId}
+                  onChange={(e) => setSelectedTruckId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                >
+                  <option value="">Choose a truck...</option>
+                  {trucks.map((truck) => (
+                    <option key={truck.id} value={truck.id}>
+                      {truck.name} ({truck.status})
+                    </option>
+                  ))}
+                </select>
+                {trucks.length === 0 && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    No available trucks. Add trucks in Fleet Management.
+                  </p>
+                )}
+              </div>
+
+              {/* Driver selection (optional) */}
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">
+                  Assign Driver (optional)
+                </label>
+                <select
+                  value={selectedDriverId}
+                  onChange={(e) => setSelectedDriverId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                >
+                  <option value="">No driver assigned</option>
+                  {drivers.map((driver) => (
+                    <option key={driver.id} value={driver.user_id}>
+                      Driver {driver.user_id.substring(0, 8)}...
+                    </option>
+                  ))}
+                </select>
+                {drivers.length === 0 && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    No drivers available. Add drivers in Team Management.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowClaimModal(false);
+                  setClaimingIncident(null);
+                }}
+                className="flex-1 px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClaimSubmit}
+                disabled={!selectedTruckId}
+                className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Claim Job
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
