@@ -45,28 +45,28 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
       {/* Profile Icon Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/40 hover:bg-emerald-500/20 transition-colors"
+        className="flex items-center justify-center h-10 w-10 rounded-xl gradient-emerald shadow-lg hover:shadow-glow transition-all hover:scale-110"
         aria-label="Profile menu"
       >
-        <span className="text-xs font-semibold text-emerald-300">
+        <span className="text-sm font-bold text-white">
           {getInitials(userEmail)}
         </span>
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-lg bg-slate-900 border border-slate-800 shadow-xl z-50">
+        <div className="absolute right-0 mt-3 w-64 rounded-2xl glass-strong shadow-2xl z-50 overflow-hidden">
           {/* User Info */}
-          <div className="px-4 py-3 border-b border-slate-800">
-            <p className="text-xs text-slate-400">Signed in as</p>
-            <p className="text-sm text-slate-100 truncate mt-1">{userEmail || "User"}</p>
+          <div className="px-5 py-4 border-b border-slate-700/50 bg-gradient-to-br from-emerald-500/10 to-transparent">
+            <p className="text-xs text-slate-400 font-medium">Signed in as</p>
+            <p className="text-sm text-slate-100 truncate mt-1 font-semibold">{userEmail || "User"}</p>
           </div>
 
           {/* Menu Items */}
           <div className="py-2">
             <Link
               href="/company"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              className="flex items-center gap-3 px-5 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-emerald-400 transition-all group"
               onClick={() => setIsOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
 
             <Link
               href="/trucks"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              className="flex items-center gap-3 px-5 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-emerald-400 transition-all group"
               onClick={() => setIsOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
 
             <Link
               href="/team"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              className="flex items-center gap-3 px-5 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-emerald-400 transition-all group"
               onClick={() => setIsOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
 
             <Link
               href="/settings"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              className="flex items-center gap-3 px-5 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-emerald-400 transition-all group"
               onClick={() => setIsOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +112,7 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-slate-800"></div>
+          <div className="border-t border-slate-700/50"></div>
 
           {/* Logout */}
           <div className="py-2">
@@ -121,7 +121,7 @@ export default function ProfileDropdown({ userEmail, onLogout }: Props) {
                 setIsOpen(false);
                 onLogout();
               }}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-rose-400 hover:bg-slate-800 hover:text-rose-300 transition-colors"
+              className="flex items-center gap-3 w-full px-5 py-3 text-sm text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all group"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
