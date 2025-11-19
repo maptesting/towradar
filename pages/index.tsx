@@ -59,14 +59,80 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Demo Panel */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 shadow-lg shadow-black/50">
-            <div className="aspect-video w-full rounded-lg bg-slate-800 animate-pulse flex items-center justify-center text-slate-500">
-              Dashboard Preview Coming Soon
+          {/* Demo Panel - Dashboard Preview */}
+          <div className="rounded-2xl glass-strong p-6 shadow-2xl">
+            <div className="space-y-4">
+              {/* Mini header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-emerald-400">Live Dashboard</h3>
+                  <p className="text-xs text-slate-400">Real-time incident monitoring</p>
+                </div>
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold glass shadow-glow">
+                  <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-emerald-300">Live</span>
+                </span>
+              </div>
+
+              {/* Mock stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="glass rounded-lg p-3">
+                  <p className="text-xs text-slate-400">Total</p>
+                  <p className="text-2xl font-bold text-slate-100">24</p>
+                </div>
+                <div className="glass rounded-lg p-3">
+                  <p className="text-xs text-slate-400">Crashes</p>
+                  <p className="text-2xl font-bold text-rose-400">8</p>
+                </div>
+                <div className="glass rounded-lg p-3">
+                  <p className="text-xs text-slate-400">Disabled</p>
+                  <p className="text-2xl font-bold text-amber-400">12</p>
+                </div>
+              </div>
+
+              {/* Mock incident cards */}
+              <div className="space-y-2">
+                <div className="glass rounded-lg p-3 border-l-4 border-rose-500">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400">CRASH</span>
+                      <p className="text-sm font-medium text-slate-100 mt-1">I-85 North @ Exit 45</p>
+                      <p className="text-xs text-slate-400 mt-0.5">2.3 km from base • 5 min ago</p>
+                    </div>
+                    <button className="px-3 py-1 rounded-lg gradient-emerald text-white text-xs font-semibold">
+                      Claim
+                    </button>
+                  </div>
+                </div>
+
+                <div className="glass rounded-lg p-3 border-l-4 border-amber-500">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">DISABLED</span>
+                      <p className="text-sm font-medium text-slate-100 mt-1">Highway 74 @ Mile 12</p>
+                      <p className="text-xs text-slate-400 mt-0.5">5.1 km from base • 12 min ago</p>
+                    </div>
+                    <button className="px-3 py-1 rounded-lg gradient-emerald text-white text-xs font-semibold">
+                      Claim
+                    </button>
+                  </div>
+                </div>
+
+                <div className="glass rounded-lg p-3 border-l-4 border-blue-500 opacity-60">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">HAZARD</span>
+                      <p className="text-sm font-medium text-slate-100 mt-1">I-485 Inner Loop @ Exit 30</p>
+                      <p className="text-xs text-slate-400 mt-0.5">8.7 km from base • 18 min ago</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 text-center pt-2">
+                ✨ Real dashboard updates every minute
+              </p>
             </div>
-            <p className="text-xs text-slate-500 text-center mt-2">
-              Live dashboard preview placeholder
-            </p>
           </div>
         </div>
       </section>
