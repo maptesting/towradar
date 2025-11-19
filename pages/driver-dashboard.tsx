@@ -427,18 +427,19 @@ export default function DriverDashboard() {
   }, [myIncidents]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+    <div className="min-h-screen text-slate-50 flex flex-col">
       <Nav />
       <main className="flex-1">
-        <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
           <header>
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-2xl font-semibold">Driver Dashboard</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/40">
-                Driver Mode
+            <div className="flex items-center gap-3 mb-3">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">Driver Dashboard</h1>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold glass shadow-glow">
+                <span className="inline-block h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-blue-300">Driver Mode</span>
               </span>
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-base text-slate-400">
               Your assigned jobs and truck status
             </p>
           </header>
@@ -450,22 +451,22 @@ export default function DriverDashboard() {
           )}
 
           {/* Stats Cards */}
-          <section className="grid gap-3 md:grid-cols-3 text-xs">
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-4">
-              <p className="text-slate-400 mb-1">Active Jobs</p>
-              <p className="text-3xl font-semibold text-emerald-400">
+          <section className="grid gap-4 md:grid-cols-3 text-sm">
+            <div className="glass rounded-2xl p-5 border border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-transparent">
+              <p className="text-slate-400 mb-2">Active Jobs</p>
+              <p className="text-4xl font-bold text-blue-400">
                 {stats.activeJobs}
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-4">
-              <p className="text-slate-400 mb-1">Crash Calls</p>
-              <p className="text-3xl font-semibold text-slate-100">
+            <div className="glass rounded-2xl p-5 border border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Crash Calls</p>
+              <p className="text-4xl font-bold text-rose-400">
                 {stats.crashes}
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-4">
-              <p className="text-slate-400 mb-1">Disabled Vehicles</p>
-              <p className="text-3xl font-semibold text-slate-100">
+            <div className="glass rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Disabled Vehicles</p>
+              <p className="text-4xl font-bold text-amber-400">
                 {stats.disabled}
               </p>
             </div>
@@ -473,22 +474,22 @@ export default function DriverDashboard() {
 
           {/* Truck Status */}
           {myTruck && (
-            <section className="border border-slate-800 bg-slate-950/80 rounded-xl p-4">
-              <h2 className="text-sm font-semibold mb-3">Your Truck</h2>
+            <section className="glass-strong rounded-2xl p-6 border border-slate-700/50">
+              <h2 className="text-base font-semibold mb-4 text-slate-300">Your Truck</h2>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-medium text-slate-100">
+                  <p className="text-2xl font-bold text-slate-100">
                     {myTruck.name}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-sm text-slate-400 mt-2">
                     Status: {myTruck.status.replace(/_/g, " ")}
                   </p>
                 </div>
                 <span
-                  className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                  className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${
                     myTruck.status === "on_job"
-                      ? "bg-blue-500/10 text-blue-300 border border-blue-500/40"
-                      : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/40"
+                      ? "bg-blue-500/20 text-blue-300 border border-blue-500/50 shadow-glow"
+                      : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-glow"
                   }`}
                 >
                   {myTruck.status === "on_job" ? "On Job" : "Available"}
@@ -498,8 +499,8 @@ export default function DriverDashboard() {
           )}
 
           {/* Active Jobs */}
-          <section className="border border-slate-800 bg-slate-950/80 rounded-xl p-4">
-            <h2 className="text-sm font-semibold mb-4">Your Active Jobs</h2>
+          <section className="glass-strong rounded-2xl p-6 border border-slate-700/50">
+            <h2 className="text-lg font-bold mb-6 text-slate-200">Your Active Jobs</h2>
 
             {loading && (
               <p className="text-sm text-slate-400">Loading jobs...</p>
@@ -515,14 +516,14 @@ export default function DriverDashboard() {
             )}
 
             {!loading && myIncidents.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {myIncidents.map((inc) => {
                   const cat = classifyIncident(inc);
 
                   return (
                     <div
                       key={inc.id}
-                      className="border border-slate-700 bg-slate-900/40 rounded-lg p-4"
+                      className="glass rounded-xl p-5 border border-slate-700/50 hover:border-slate-600/50 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex gap-2 items-center flex-wrap">
@@ -552,11 +553,11 @@ export default function DriverDashboard() {
                       </div>
                       
                       {/* Status Action Buttons */}
-                      <div className="flex gap-2 mb-3">
+                      <div className="flex gap-3 mb-4">
                         {inc.status === "claimed" && (
                           <button
                             onClick={() => updateJobStatus(inc.id, "en_route")}
-                            className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors"
+                            className="px-4 py-2 rounded-lg gradient-blue text-white text-sm font-semibold shadow-glow hover:scale-105 transition-transform"
                           >
                             🚗 Mark En Route
                           </button>
@@ -564,7 +565,7 @@ export default function DriverDashboard() {
                         {inc.status === "en_route" && (
                           <button
                             onClick={() => updateJobStatus(inc.id, "on_scene")}
-                            className="px-3 py-1 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors"
+                            className="px-4 py-2 rounded-lg gradient-purple text-white text-sm font-semibold shadow-glow hover:scale-105 transition-transform"
                           >
                             🔧 Mark On Scene
                           </button>
@@ -572,7 +573,7 @@ export default function DriverDashboard() {
                         {inc.status === "on_scene" && (
                           <button
                             onClick={() => updateJobStatus(inc.id, "completed")}
-                            className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+                            className="px-4 py-2 rounded-lg gradient-emerald text-white text-sm font-semibold shadow-glow hover:scale-105 transition-transform"
                           >
                             ✅ Complete Job
                           </button>
@@ -651,17 +652,17 @@ export default function DriverDashboard() {
           </section>
 
           {/* Available Incidents - Driver Can Self-Claim */}
-          <section className="border border-emerald-800 bg-emerald-950/20 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-4">
+          <section className="glass-strong rounded-2xl p-6 border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-sm font-semibold">Available Incidents Nearby</h2>
-                <p className="text-xs text-slate-400 mt-1">
+                <h2 className="text-lg font-bold text-emerald-300">Available Incidents Nearby</h2>
+                <p className="text-sm text-slate-400 mt-2">
                   Claim jobs yourself (max {MAX_ACTIVE_JOBS} active at once)
                 </p>
               </div>
               <button
                 onClick={loadAvailableIncidents}
-                className="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs"
+                className="px-4 py-2 rounded-lg glass border border-slate-700/50 hover:bg-white/5 text-slate-100 text-sm font-medium transition-colors"
               >
                 Refresh
               </button>
@@ -685,7 +686,7 @@ export default function DriverDashboard() {
             )}
 
             {availableIncidents.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {availableIncidents.slice(0, 10).map((inc) => {
                   const cat = classifyIncident(inc);
                   const canClaim = myIncidents.length < MAX_ACTIVE_JOBS;
@@ -693,7 +694,7 @@ export default function DriverDashboard() {
                   return (
                     <div
                       key={inc.id}
-                      className="border border-slate-700 bg-slate-900/40 rounded-lg p-3 flex items-start justify-between gap-3"
+                      className="glass rounded-xl p-4 border border-slate-700/50 hover:border-emerald-500/30 transition-colors flex items-start justify-between gap-4"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -721,7 +722,7 @@ export default function DriverDashboard() {
                       <button
                         onClick={() => handleSelfClaim(inc)}
                         disabled={!canClaim || claimingId === inc.id}
-                        className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="px-5 py-2 rounded-lg gradient-emerald text-white text-sm font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
                       >
                         {claimingId === inc.id ? "Claiming..." : "Claim"}
                       </button>
