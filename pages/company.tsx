@@ -171,48 +171,48 @@ export default function CompanyPage() {
 
   if (!authChecked || loading || !company) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+      <div className="min-h-screen text-slate-50 flex flex-col">
         <Nav />
         <main className="flex-1 flex items-center justify-center">
-          <p className="text-slate-400 text-sm">Loading company…</p>
+          <p className="text-slate-400 text-lg">Loading company…</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+    <div className="min-h-screen text-slate-50 flex flex-col">
       <Nav />
       <main className="flex-1">
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-          <header className="space-y-1">
-            <h1 className="text-2xl font-semibold">
-              Company settings
+        <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
+          <header className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+              Company Settings
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-base text-slate-400">
               Set your yard location, coverage radius, and alert rules.
             </p>
           </header>
 
           {errorMsg && (
-            <p className="text-sm text-rose-400 border border-rose-500/40 bg-rose-950/40 rounded-md px-3 py-2">
+            <p className="text-base glass-strong border border-rose-500/50 rounded-2xl px-5 py-4 text-rose-400 shadow-glow">
               {errorMsg}
             </p>
           )}
           {savedMsg && (
-            <p className="text-sm text-emerald-300 border border-emerald-500/40 bg-emerald-950/30 rounded-md px-3 py-2">
+            <p className="text-base glass-strong border border-emerald-500/50 rounded-2xl px-5 py-4 text-emerald-300 shadow-glow">
               {savedMsg}
             </p>
           )}
 
-          <form onSubmit={handleSave} className="space-y-6 text-sm">
+          <form onSubmit={handleSave} className="space-y-6">
             {/* Basic info */}
-            <section className="border border-slate-800 bg-slate-950/80 rounded-xl p-4 space-y-4">
-              <h2 className="font-medium text-slate-100">
-                Company profile
+            <section className="glass-strong rounded-2xl p-6 border border-slate-700/50 space-y-5">
+              <h2 className="text-xl font-bold text-slate-200">
+                Company Profile
               </h2>
               <div className="space-y-2">
-                <label className="block text-xs text-slate-400 mb-1">
+                <label className="block text-sm font-medium text-slate-400 mb-2">
                   Company name
                 </label>
                 <input
@@ -221,14 +221,14 @@ export default function CompanyPage() {
                   onChange={(e) =>
                     setCompany({ ...company, name: e.target.value })
                   }
-                  className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full rounded-lg glass border border-slate-700/50 px-4 py-3 text-base text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   placeholder="e.g. Queen City Towing"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
                     Yard latitude
                   </label>
                   <input
@@ -241,11 +241,11 @@ export default function CompanyPage() {
                         base_lat: Number(e.target.value),
                       })
                     }
-                    className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full rounded-lg glass border border-slate-700/50 px-4 py-3 text-base text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
                     Yard longitude
                   </label>
                   <input
@@ -258,11 +258,11 @@ export default function CompanyPage() {
                         base_lng: Number(e.target.value),
                       })
                     }
-                    className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full rounded-lg glass border border-slate-700/50 px-4 py-3 text-base text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
                     Coverage radius (km)
                   </label>
                   <input
@@ -276,19 +276,19 @@ export default function CompanyPage() {
                         radius_km: Number(e.target.value),
                       })
                     }
-                    className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full rounded-lg glass border border-slate-700/50 px-4 py-3 text-base text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   />
                 </div>
               </div>
             </section>
 
             {/* Alert rules */}
-            <section className="border border-slate-800 bg-slate-950/80 rounded-xl p-4 space-y-4">
+            <section className="glass-strong rounded-2xl p-6 border border-slate-700/50 space-y-5">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="font-medium text-slate-100">
-                  Alert rules
+                <h2 className="text-xl font-bold text-slate-200">
+                  Alert Rules
                 </h2>
-                <label className="inline-flex items-center gap-2 text-xs text-slate-300">
+                <label className="inline-flex items-center gap-3 text-sm text-slate-300">
                   <input
                     type="checkbox"
                     checked={company.alert_enabled}
@@ -298,20 +298,20 @@ export default function CompanyPage() {
                         alert_enabled: e.target.checked,
                       })
                     }
-                    className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+                    className="w-5 h-5 rounded border-slate-600 glass text-emerald-500 focus:ring-2 focus:ring-emerald-500"
                   />
                   Enable alerts
                 </label>
               </div>
 
-              <p className="text-xs text-slate-400">
+              <p className="text-sm text-slate-400">
                 Choose which incident types should trigger a tow alert
                 when they appear inside (or just outside) your
                 coverage area.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <label className="inline-flex items-center gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <label className="inline-flex items-center gap-3 glass rounded-lg p-3 border border-slate-700/50">
                   <input
                     type="checkbox"
                     checked={company.alert_crash}
@@ -321,11 +321,11 @@ export default function CompanyPage() {
                         alert_crash: e.target.checked,
                       })
                     }
-                    className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+                    className="w-5 h-5 rounded border-slate-600 glass text-emerald-500 focus:ring-2 focus:ring-emerald-500"
                   />
-                  <span>Crashes</span>
+                  <span className="text-slate-200 font-medium">Crashes</span>
                 </label>
-                <label className="inline-flex items-center gap-2">
+                <label className="inline-flex items-center gap-3 glass rounded-lg p-3 border border-slate-700/50">
                   <input
                     type="checkbox"
                     checked={company.alert_disabled}
@@ -335,11 +335,11 @@ export default function CompanyPage() {
                         alert_disabled: e.target.checked,
                       })
                     }
-                    className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+                    className="w-5 h-5 rounded border-slate-600 glass text-emerald-500 focus:ring-2 focus:ring-emerald-500"
                   />
-                  <span>Disabled vehicles</span>
+                  <span className="text-slate-200 font-medium">Disabled vehicles</span>
                 </label>
-                <label className="inline-flex items-center gap-2">
+                <label className="inline-flex items-center gap-3 glass rounded-lg p-3 border border-slate-700/50">
                   <input
                     type="checkbox"
                     checked={company.alert_hazard}
@@ -349,15 +349,15 @@ export default function CompanyPage() {
                         alert_hazard: e.target.checked,
                       })
                     }
-                    className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+                    className="w-5 h-5 rounded border-slate-600 glass text-emerald-500 focus:ring-2 focus:ring-emerald-500"
                   />
-                  <span>Hazards</span>
+                  <span className="text-slate-200 font-medium">Hazards</span>
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
                     Extra distance buffer (km)
                   </label>
                   <input
@@ -371,9 +371,9 @@ export default function CompanyPage() {
                         alert_max_extra_km: Number(e.target.value),
                       })
                     }
-                    className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full rounded-lg glass border border-slate-700/50 px-4 py-3 text-base text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   />
-                  <p className="text-[11px] text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-2">
                     Example: radius = 40km, buffer = 5km → alerts up to
                     45km away.
                   </p>
@@ -381,13 +381,13 @@ export default function CompanyPage() {
               </div>
             </section>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium disabled:bg-emerald-800"
+                className="px-8 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
               >
-                {saving ? "Saving…" : "Save settings"}
+                {saving ? "Saving…" : "Save Settings"}
               </button>
             </div>
           </form>
