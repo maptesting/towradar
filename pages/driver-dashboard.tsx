@@ -25,15 +25,24 @@ type Truck = {
   status: string;
 };
 
+type AvailableIncident = Incident & {
+  distanceKm?: number;
+  claim_status?: string | null;
+};
+
 export default function DriverDashboard() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [myIncidents, setMyIncidents] = useState<Incident[]>([]);
+  const [availableIncidents, setAvailableIncidents] = useState<AvailableIncident[]>([]);
   const [myTruck, setMyTruck] = useState<Truck | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  
+  const MAX_ACTIVE_JOBS = 2; // Driver can only have 2 active jobs at once
 
   // Auth check
   useEffect(() => {
@@ -174,8 +183,121 @@ export default function DriverDashboard() {
     setLoading(false);
   }
 
+  // Load available incidents nearby
+  async function loadAvailableIncidents() {
+    if (!companyId) return;
+
+    try {
+      const { data: { session } = {} } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      // Get incidents from last hour
+      const res = await fetch(`/api/incidents-client?minutes=60`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        console.error("Available incidents error:", json);
+        return;
+      }
+
+      const baseIncidents = (json.incidents || []) as AvailableIncident[];
+
+      // Get all claims for this company to filter out already claimed
+      const { data: claims } = await supabase
+        .from("company_incident_claims")
+        .select("incident_id, status")
+        .eq("company_id", companyId);
+
+      const claimedIds = new Set((claims || []).map((c: any) => c.incident_id));
+
+      // Filter to unclaimed incidents only
+      const available = baseIncidents.filter((inc) => !claimedIds.has(inc.id));
+
+      setAvailableIncidents(available);
+    } catch (err) {
+      console.error("Load available error:", err);
+    }
+  }
+
+  useEffect(() => {
+    if (!companyId) return;
+    loadAvailableIncidents();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(loadAvailableIncidents, 30000);
+    return () => clearInterval(interval);
+  }, [companyId]);
+
+  async function handleSelfClaim(incident: AvailableIncident) {
+    if (!companyId || !userId) return;
+
+    // Check if driver already has max jobs
+    if (myIncidents.length >= MAX_ACTIVE_JOBS) {
+      setErrorMsg(`You can only have ${MAX_ACTIVE_JOBS} active jobs at a time. Complete a job first.`);
+      return;
+    }
+
+    // Get available truck assigned to this driver or any available truck
+    const { data: trucksData } = await supabase
+      .from("trucks")
+      .select("id, name")
+      .eq("company_id", companyId)
+      .eq("status", "available")
+      .limit(1);
+
+    if (!trucksData || trucksData.length === 0) {
+      setErrorMsg("No available trucks. Contact your dispatcher.");
+      return;
+    }
+
+    const truck = trucksData[0];
+    setClaimingId(incident.id);
+
+    // Create claim
+    const { error: claimError } = await supabase
+      .from("company_incident_claims")
+      .insert({
+        company_id: companyId,
+        incident_id: incident.id,
+        status: "claimed",
+        truck_id: truck.id,
+        driver_user_id: userId,
+        claimed_at: new Date().toISOString(),
+      });
+
+    if (claimError) {
+      console.error("Self-claim error:", claimError);
+      setErrorMsg("Error claiming incident. It may have been claimed by someone else.");
+      setClaimingId(null);
+      return;
+    }
+
+    // Update truck status
+    await supabase
+      .from("trucks")
+      .update({ status: "on_job", updated_at: new Date().toISOString() })
+      .eq("id", truck.id);
+
+    // Reload data
+    await loadDriverData();
+    await loadAvailableIncidents();
+    setClaimingId(null);
+    setErrorMsg(null);
+  }
+
   async function handleComplete(incidentId: string) {
     if (!companyId || !userId) return;
+
+    // Get the truck_id from the claim
+    const { data: claimData } = await supabase
+      .from("company_incident_claims")
+      .select("truck_id")
+      .eq("company_id", companyId)
+      .eq("incident_id", incidentId)
+      .eq("driver_user_id", userId)
+      .single();
 
     const { error } = await supabase
       .from("company_incident_claims")
@@ -191,7 +313,16 @@ export default function DriverDashboard() {
       console.error("Complete error:", error);
       setErrorMsg("Error marking job complete.");
     } else {
+      // Set truck back to available
+      if (claimData?.truck_id) {
+        await supabase
+          .from("trucks")
+          .update({ status: "available", updated_at: new Date().toISOString() })
+          .eq("id", claimData.truck_id);
+      }
+
       loadDriverData();
+      loadAvailableIncidents();
     }
   }
 
@@ -376,6 +507,88 @@ export default function DriverDashboard() {
                           Open in Google Maps
                         </a>
                       </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Available Incidents - Driver Can Self-Claim */}
+          <section className="border border-emerald-800 bg-emerald-950/20 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold">Available Incidents Nearby</h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Claim jobs yourself (max {MAX_ACTIVE_JOBS} active at once)
+                </p>
+              </div>
+              <button
+                onClick={loadAvailableIncidents}
+                className="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs"
+              >
+                Refresh
+              </button>
+            </div>
+
+            {myIncidents.length >= MAX_ACTIVE_JOBS && (
+              <div className="text-center py-4 border border-yellow-500/40 bg-yellow-950/20 rounded-md mb-4">
+                <p className="text-sm text-yellow-300">
+                  You have {MAX_ACTIVE_JOBS} active jobs. Complete one before claiming more.
+                </p>
+              </div>
+            )}
+
+            {availableIncidents.length === 0 && (
+              <div className="text-center py-6">
+                <p className="text-slate-400 text-sm">No unclaimed incidents nearby</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  New incidents will appear here automatically
+                </p>
+              </div>
+            )}
+
+            {availableIncidents.length > 0 && (
+              <div className="space-y-2">
+                {availableIncidents.slice(0, 10).map((inc) => {
+                  const cat = classifyIncident(inc);
+                  const canClaim = myIncidents.length < MAX_ACTIVE_JOBS;
+
+                  return (
+                    <div
+                      key={inc.id}
+                      className="border border-slate-700 bg-slate-900/40 rounded-lg p-3 flex items-start justify-between gap-3"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${CATEGORY_BADGE_CLASS[cat]}`}
+                          >
+                            {CATEGORY_LABEL[cat]}
+                          </span>
+                          {inc.distanceKm && (
+                            <span className="text-xs text-slate-500">
+                              {inc.distanceKm.toFixed(1)} km away
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-slate-100">
+                          {inc.road || "Unknown location"}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {inc.description || "No details"}
+                        </p>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          {new Date(inc.occurred_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelfClaim(inc)}
+                        disabled={!canClaim || claimingId === inc.id}
+                        className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                      >
+                        {claimingId === inc.id ? "Claiming..." : "Claim"}
+                      </button>
                     </div>
                   );
                 })}
