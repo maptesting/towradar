@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { fetchCharlotteIncidents } from "../../lib/incidentSources/ncCharlotte";
+import { fetchTomTomIncidents } from "../../lib/incidentSources/tomtom";
 import { IncidentInput } from "../../lib/types";
 import { apiRatelimit } from "../../lib/ratelimit";
 
@@ -38,9 +39,16 @@ export default async function handler(
     }
 
     const allIncidents: IncidentInput[] = [];
+    
+    // Fetch from NC DOT
     const cltIncidents = await fetchCharlotteIncidents();
     console.log("NC TIMS Mecklenburg returned:", cltIncidents.length, "items");
     allIncidents.push(...cltIncidents);
+    
+    // Fetch from TomTom
+    const tomtomIncidents = await fetchTomTomIncidents();
+    console.log("TomTom returned:", tomtomIncidents.length, "items");
+    allIncidents.push(...tomtomIncidents);
 
     let inserted = 0;
     const errors: { externalId: string; message: string }[] = [];

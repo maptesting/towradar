@@ -1,9 +1,10 @@
 // pages/driver-dashboard.tsx
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import Nav from "../components/Nav";
 import { supabase } from "../lib/supabaseClient";
 import { classifyIncident, CATEGORY_LABEL, CATEGORY_BADGE_CLASS } from "../lib/utils";
+import { requestNotificationPermission, notifyJobAssigned, notifyNearbyIncident } from "../lib/notifications";
 
 type Incident = {
   id: string;
@@ -15,7 +16,10 @@ type Incident = {
   city: string | null;
   state: string | null;
   occurred_at: string;
+  status?: "claimed" | "en_route" | "on_scene" | "completed";
   claimed_at?: string;
+  en_route_at?: string;
+  on_scene_at?: string;
   truck_name?: string | null;
 };
 
@@ -30,19 +34,41 @@ type AvailableIncident = Incident & {
   claim_status?: string | null;
 };
 
+// Helper function to format elapsed time
+function formatElapsedTime(startDate: string): string {
+  const start = new Date(startDate).getTime();
+  const now = Date.now();
+  const diffMs = now - start;
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  const hours = Math.floor(diffMins / 60);
+  const mins = diffMins % 60;
+  return `${hours}h ${mins}m ago`;
+}
+
 export default function DriverDashboard() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [myIncidents, setMyIncidents] = useState<Incident[]>([]);
+  const myIncidentsRef = useRef<Incident[]>([]);
   const [availableIncidents, setAvailableIncidents] = useState<AvailableIncident[]>([]);
+  const availableIncidentsRef = useRef<AvailableIncident[]>([]);
   const [myTruck, setMyTruck] = useState<Truck | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
   
   const MAX_ACTIVE_JOBS = 2; // Driver can only have 2 active jobs at once
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   // Auth check
   useEffect(() => {
@@ -110,6 +136,8 @@ export default function DriverDashboard() {
           incident_id,
           truck_id,
           claimed_at,
+          en_route_at,
+          on_scene_at,
           status,
           trucks (
             name
@@ -117,7 +145,7 @@ export default function DriverDashboard() {
         `)
         .eq("company_id", companyId)
         .eq("driver_user_id", userId)
-        .eq("status", "claimed");
+        .in("status", ["claimed", "en_route", "on_scene"]);
 
       if (claimsError) {
         console.error("Claims error:", claimsError);
@@ -150,18 +178,40 @@ export default function DriverDashboard() {
       const claimsMap = new Map();
       claims.forEach((c: any) => {
         claimsMap.set(c.incident_id, {
+          status: c.status,
           claimed_at: c.claimed_at,
+          en_route_at: c.en_route_at,
+          on_scene_at: c.on_scene_at,
           truck_name: c.trucks?.name || null,
         });
       });
 
       const merged = (incidents || []).map((inc: any) => ({
         ...inc,
+        status: claimsMap.get(inc.id)?.status,
         claimed_at: claimsMap.get(inc.id)?.claimed_at,
+        en_route_at: claimsMap.get(inc.id)?.en_route_at,
+        on_scene_at: claimsMap.get(inc.id)?.on_scene_at,
         truck_name: claimsMap.get(inc.id)?.truck_name,
       }));
 
+      // Detect new job assignments
+      const prevIds = new Set(myIncidentsRef.current.map(i => i.id));
+      const newJobs = merged.filter((inc: Incident) => !prevIds.has(inc.id));
+      
+      if (newJobs.length > 0) {
+        newJobs.forEach((job: Incident) => {
+          notifyJobAssigned({
+            id: job.id,
+            description: job.description || "No description",
+            road: job.road,
+            truckName: job.truck_name || undefined,
+          });
+        });
+      }
+
       setMyIncidents(merged);
+      myIncidentsRef.current = merged;
 
       // Get driver's assigned truck (most recent)
       if (claims.length > 0 && (claims[0] as any).truck_id) {
@@ -215,7 +265,30 @@ export default function DriverDashboard() {
       // Filter to unclaimed incidents only
       const available = baseIncidents.filter((inc) => !claimedIds.has(inc.id));
 
+      // Detect new nearby incidents (within 5km)
+      const prevIds = new Set(availableIncidentsRef.current.map(i => i.id));
+      const newNearby = available.filter((inc) => 
+        !prevIds.has(inc.id) && 
+        inc.distanceKm !== undefined && 
+        inc.distanceKm <= 5
+      );
+      
+      if (newNearby.length > 0) {
+        // Only notify about the closest one to avoid spam
+        const closest = newNearby.sort((a, b) => 
+          (a.distanceKm || 999) - (b.distanceKm || 999)
+        )[0];
+        
+        notifyNearbyIncident({
+          id: closest.id,
+          type: closest.type,
+          road: closest.road,
+          distanceKm: closest.distanceKm,
+        });
+      }
+
       setAvailableIncidents(available);
+      availableIncidentsRef.current = available;
     } catch (err) {
       console.error("Load available error:", err);
     }
@@ -287,33 +360,46 @@ export default function DriverDashboard() {
     setErrorMsg(null);
   }
 
-  async function handleComplete(incidentId: string) {
+  async function updateJobStatus(
+    incidentId: string,
+    newStatus: "claimed" | "en_route" | "on_scene" | "completed"
+  ) {
     if (!companyId || !userId) return;
 
-    // Get the truck_id from the claim
-    const { data: claimData } = await supabase
-      .from("company_incident_claims")
-      .select("truck_id")
-      .eq("company_id", companyId)
-      .eq("incident_id", incidentId)
-      .eq("driver_user_id", userId)
-      .single();
+    const updateData: any = { status: newStatus };
+
+    // Add timestamp for each status
+    if (newStatus === "en_route") {
+      updateData.en_route_at = new Date().toISOString();
+    } else if (newStatus === "on_scene") {
+      updateData.on_scene_at = new Date().toISOString();
+    } else if (newStatus === "completed") {
+      updateData.completed_at = new Date().toISOString();
+    }
 
     const { error } = await supabase
       .from("company_incident_claims")
-      .update({ 
-        status: "completed",
-        completed_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq("company_id", companyId)
       .eq("incident_id", incidentId)
       .eq("driver_user_id", userId);
 
     if (error) {
-      console.error("Complete error:", error);
-      setErrorMsg("Error marking job complete.");
-    } else {
-      // Set truck back to available
+      console.error("Status update error:", error);
+      setErrorMsg(`Error updating status to ${newStatus}.`);
+      return;
+    }
+
+    // If completed, free up the truck
+    if (newStatus === "completed") {
+      const { data: claimData } = await supabase
+        .from("company_incident_claims")
+        .select("truck_id")
+        .eq("company_id", companyId)
+        .eq("incident_id", incidentId)
+        .eq("driver_user_id", userId)
+        .single();
+
       if (claimData?.truck_id) {
         await supabase
           .from("trucks")
@@ -321,9 +407,15 @@ export default function DriverDashboard() {
           .eq("id", claimData.truck_id);
       }
 
-      loadDriverData();
       loadAvailableIncidents();
     }
+
+    loadDriverData();
+    setErrorMsg(null);
+  }
+
+  async function handleComplete(incidentId: string) {
+    await updateJobStatus(incidentId, "completed");
   }
 
   const stats = useMemo(() => {
@@ -433,24 +525,58 @@ export default function DriverDashboard() {
                       className="border border-slate-700 bg-slate-900/40 rounded-lg p-4"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <div>
+                        <div className="flex gap-2 items-center flex-wrap">
                           <span
                             className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${CATEGORY_BADGE_CLASS[cat]}`}
                           >
                             {CATEGORY_LABEL[cat]}
                           </span>
                           {inc.truck_name && (
-                            <span className="ml-2 text-xs text-slate-400">
+                            <span className="text-xs text-slate-400">
                               🚛 {inc.truck_name}
                             </span>
                           )}
+                          {/* Status Badge */}
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            inc.status === "claimed" ? "bg-yellow-900/40 text-yellow-400 border border-yellow-700" :
+                            inc.status === "en_route" ? "bg-blue-900/40 text-blue-400 border border-blue-700" :
+                            inc.status === "on_scene" ? "bg-purple-900/40 text-purple-400 border border-purple-700" :
+                            "bg-slate-900/40 text-slate-400 border border-slate-700"
+                          }`}>
+                            {inc.status === "claimed" ? "📋 Claimed" :
+                             inc.status === "en_route" ? "🚗 En Route" :
+                             inc.status === "on_scene" ? "🔧 On Scene" :
+                             "Claimed"}
+                          </span>
                         </div>
-                        <button
-                          onClick={() => handleComplete(inc.id)}
-                          className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
-                        >
-                          Mark Complete
-                        </button>
+                      </div>
+                      
+                      {/* Status Action Buttons */}
+                      <div className="flex gap-2 mb-3">
+                        {inc.status === "claimed" && (
+                          <button
+                            onClick={() => updateJobStatus(inc.id, "en_route")}
+                            className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors"
+                          >
+                            🚗 Mark En Route
+                          </button>
+                        )}
+                        {inc.status === "en_route" && (
+                          <button
+                            onClick={() => updateJobStatus(inc.id, "on_scene")}
+                            className="px-3 py-1 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors"
+                          >
+                            🔧 Mark On Scene
+                          </button>
+                        )}
+                        {inc.status === "on_scene" && (
+                          <button
+                            onClick={() => updateJobStatus(inc.id, "completed")}
+                            className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+                          >
+                            ✅ Complete Job
+                          </button>
+                        )}
                       </div>
 
                       <div className="space-y-1">
@@ -464,15 +590,25 @@ export default function DriverDashboard() {
                         <p className="text-xs text-slate-400">
                           {inc.description || "No details available"}
                         </p>
-                        <div className="flex gap-4 text-xs text-slate-500 mt-2">
-                          <span>
-                            Occurred:{" "}
-                            {new Date(inc.occurred_at).toLocaleString()}
+                        
+                        {/* Status Timestamps */}
+                        <div className="flex flex-wrap gap-3 text-xs mt-2">
+                          <span className="text-slate-500">
+                            Occurred: {formatElapsedTime(inc.occurred_at)}
                           </span>
                           {inc.claimed_at && (
-                            <span>
-                              Claimed:{" "}
-                              {new Date(inc.claimed_at).toLocaleString()}
+                            <span className="text-slate-400">
+                              Claimed: {formatElapsedTime(inc.claimed_at)}
+                            </span>
+                          )}
+                          {inc.en_route_at && (
+                            <span className="text-blue-400 font-medium">
+                              🚗 En Route: {formatElapsedTime(inc.en_route_at)}
+                            </span>
+                          )}
+                          {inc.on_scene_at && (
+                            <span className="text-purple-400 font-medium">
+                              🔧 On Scene: {formatElapsedTime(inc.on_scene_at)}
                             </span>
                           )}
                         </div>

@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import Nav from "../components/Nav";
 import { supabase } from "../lib/supabaseClient";
 import { classifyIncident, CATEGORY_LABEL, CATEGORY_BADGE_CLASS, CLAIM_BADGE_CLASS } from "../lib/utils";
+import { requestNotificationPermission, notifyNewIncident } from "../lib/notifications";
 
 const MapPanel = dynamic(() => import("../components/MapPanel"), {
   ssr: false,
@@ -162,6 +163,15 @@ export default function Dashboard() {
         return;
       }
 
+      // Request notification permission
+      requestNotificationPermission().then(granted => {
+        if (granted) {
+          console.log("Notifications enabled");
+        } else {
+          console.warn("Notifications denied or not supported");
+        }
+      });
+
       setCompany({
         id: data.id,
         name: data.name ?? "Your Company",
@@ -180,15 +190,16 @@ export default function Dashboard() {
   // -------- Browser notifications helper --------
   function triggerBrowserNotification(alert: Alert) {
     if (typeof window === "undefined") return;
-    if (!("Notification" in window)) return;
-
-    if (Notification.permission === "granted") {
-      new Notification(alert.title, { body: alert.body });
-    } else if (Notification.permission === "default") {
-      Notification.requestPermission().then((perm) => {
-        if (perm === "granted") {
-          new Notification(alert.title, { body: alert.body });
-        }
+    
+    // Find the incident to get full details
+    const incident = incidentsRef.current.find(i => i.id === alert.id);
+    if (incident) {
+      notifyNewIncident({
+        id: incident.id,
+        type: incident.type,
+        description: incident.description || "",
+        road: incident.road,
+        city: incident.city,
       });
     }
   }
