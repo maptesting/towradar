@@ -174,21 +174,21 @@ export default function TeamPage() {
   const isOwner = userRole === "owner";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+    <div className="min-h-screen text-slate-50 flex flex-col">
       <Nav />
       <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold">Team Management</h1>
-              <p className="text-sm text-slate-400">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Team Management</h1>
+              <p className="text-base text-slate-400 mt-2">
                 Manage your team members and roles
               </p>
             </div>
             {isOwner && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm"
+                className="px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform"
               >
                 + Invite Member
               </button>
@@ -207,43 +207,43 @@ export default function TeamPage() {
             </div>
           )}
 
-          <div className="border border-slate-800 bg-slate-950/80 rounded-xl overflow-hidden">
+          <div className="glass-strong rounded-2xl overflow-hidden border border-slate-700/50">
             <table className="w-full">
-              <thead className="bg-slate-900/80 border-b border-slate-800">
+              <thead className="glass-strong border-b border-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
                     Member
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
                     Joined
                   </th>
                   {isOwner && (
-                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider">
                       Actions
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-800/40">
                 {teamMembers.map((member) => (
-                  <tr key={member.id} className="hover:bg-slate-900/40">
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-slate-100 font-mono text-xs">{member.user_id}</p>
-                      <p className="text-xs text-slate-500">
+                  <tr key={member.id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-slate-100 font-mono">{member.user_id}</p>
+                      <p className="text-sm text-emerald-400 font-medium mt-1">
                         {member.user_id === userId && "(You)"}
                       </p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       {isOwner && member.user_id !== userId ? (
                         <select
                           value={member.role}
                           onChange={(e) =>
                             handleChangeRole(member.id, e.target.value)
                           }
-                          className="px-2 py-1 rounded-full text-xs font-medium border bg-slate-900 border-slate-700 text-slate-300"
+                          className="px-3 py-2 rounded-lg glass border border-slate-700/50 text-sm font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                         >
                           <option value="driver">Driver</option>
                           <option value="dispatcher">Dispatcher</option>
@@ -251,7 +251,7 @@ export default function TeamPage() {
                         </select>
                       ) : (
                         <span
-                          className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${
+                          className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
                             roleColors[member.role]
                           }`}
                         >
@@ -259,17 +259,17 @@ export default function TeamPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-400">
+                    <td className="px-6 py-4 text-base text-slate-300">
                       {new Date(member.created_at).toLocaleDateString()}
                     </td>
                     {isOwner && (
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-6 py-4 text-right">
                         {member.user_id !== userId && (
                           <button
                             onClick={() =>
                               handleRemoveMember(member.id)
                             }
-                            className="px-3 py-1 rounded-md bg-rose-900/40 hover:bg-rose-900/60 text-rose-300 text-xs"
+                            className="px-4 py-2 rounded-lg glass border border-rose-500/50 hover:bg-rose-500/10 text-rose-300 text-sm font-medium transition-colors"
                           >
                             Remove
                           </button>
@@ -293,11 +293,11 @@ export default function TeamPage() {
             </table>
           </div>
 
-          <div className="border border-slate-800 bg-slate-900/40 rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-300 mb-2">
+          <div className="glass-strong rounded-2xl p-6 border border-slate-700/50">
+            <h3 className="text-lg font-bold text-slate-200 mb-4">
               Role Descriptions
             </h3>
-            <ul className="space-y-1 text-xs text-slate-400">
+            <ul className="space-y-3 text-sm text-slate-300">
               <li>
                 <span className="font-medium text-purple-300">Owner:</span> Full
                 access to manage company, fleet, team, and incidents
@@ -317,32 +317,32 @@ export default function TeamPage() {
 
       {/* Invite Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Invite Team Member</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="glass-strong border border-slate-700/50 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Invite Team Member</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   placeholder="driver@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-1">Role</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Role</label>
                 <select
                   value={inviteRole}
                   onChange={(e) =>
                     setInviteRole(e.target.value as "driver" | "dispatcher")
                   }
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                 >
                   <option value="driver">Driver</option>
                   <option value="dispatcher">Dispatcher</option>
@@ -350,21 +350,21 @@ export default function TeamPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-4 mt-8">
               <button
                 onClick={() => {
                   setShowAddModal(false);
                   setInviteEmail("");
                   setErrorMsg(null);
                 }}
-                className="flex-1 px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100"
+                className="flex-1 px-6 py-3 rounded-lg glass border border-slate-700/50 hover:bg-white/5 text-slate-100 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleInvite}
                 disabled={!inviteEmail.trim()}
-                className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 Preview Invite
               </button>
