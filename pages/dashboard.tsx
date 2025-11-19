@@ -654,37 +654,37 @@ export default function Dashboard() {
           )}
 
           {/* Stats */}
-          <section className="grid gap-3 md:grid-cols-5 text-xs mt-2">
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3">
-              <p className="text-slate-400 mb-1">Total incidents</p>
-              <p className="text-xl font-semibold text-slate-100">
+          <section className="grid gap-4 md:grid-cols-5 text-sm">
+            <div className="glass rounded-2xl p-5 border border-slate-700/50">
+              <p className="text-slate-400 mb-2">Total incidents</p>
+              <p className="text-3xl font-bold text-slate-100">
                 {stats.total}
               </p>
-              <p className="text-slate-500 mt-1">
+              <p className="text-slate-500 mt-2 text-xs">
                 Inside {radiusKm} km of your yard.
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3">
-              <p className="text-slate-400 mb-1">Jobs claimed</p>
-              <p className="text-xl font-semibold text-emerald-400">
+            <div className="glass rounded-2xl p-5 border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Jobs claimed</p>
+              <p className="text-3xl font-bold text-emerald-400">
                 {stats.claimed}
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3">
-              <p className="text-slate-400 mb-1">Crashes</p>
-              <p className="text-xl font-semibold text-slate-100">
+            <div className="glass rounded-2xl p-5 border border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Crashes</p>
+              <p className="text-3xl font-bold text-rose-400">
                 {stats.crash}
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3">
-              <p className="text-slate-400 mb-1">Disabled vehicles</p>
-              <p className="text-xl font-semibold text-slate-100">
+            <div className="glass rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Disabled vehicles</p>
+              <p className="text-3xl font-bold text-amber-400">
                 {stats.disabled}
               </p>
             </div>
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3">
-              <p className="text-slate-400 mb-1">Hazards / closures</p>
-              <p className="text-xl font-semibold text-slate-100">
+            <div className="glass rounded-2xl p-5 border border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent">
+              <p className="text-slate-400 mb-2">Hazards / closures</p>
+              <p className="text-3xl font-bold text-blue-400">
                 {stats.hazard + stats.closure + stats.other}
               </p>
             </div>
@@ -703,18 +703,18 @@ export default function Dashboard() {
           )}
 
           {/* List + Map */}
-          <section className="grid gap-4 md:grid-cols-[1.4fr,1.1fr] items-start">
+          <section className="grid gap-6 md:grid-cols-[1.4fr,1.1fr] items-start">
             {/* Incident list */}
-            <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-3 text-xs max-h-[480px] overflow-auto">
+            <div className="glass-strong rounded-2xl p-4 text-sm max-h-[600px] overflow-auto border border-slate-700/50">
               <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 bg-slate-950">
-                  <tr className="text-slate-400 border-b border-slate-800">
-                    <th className="py-2 pr-3">Time</th>
-                    <th className="py-2 pr-3">Category</th>
-                    <th className="py-2 pr-3">Details</th>
-                    <th className="py-2 pr-3">Status</th>
-                    <th className="py-2 pr-3 text-right">Dist (km)</th>
-                    <th className="py-2 pr-3 text-right">Action</th>
+                <thead className="sticky top-0 glass-strong">
+                  <tr className="text-slate-400 border-b border-slate-700">
+                    <th className="py-3 pr-4 font-semibold">Time</th>
+                    <th className="py-3 pr-4 font-semibold">Category</th>
+                    <th className="py-3 pr-4 font-semibold">Details</th>
+                    <th className="py-3 pr-4 font-semibold">Status</th>
+                    <th className="py-3 pr-4 text-right font-semibold">Dist (km)</th>
+                    <th className="py-3 pr-4 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -725,7 +725,7 @@ export default function Dashboard() {
                     return (
                       <tr
                         key={inc.id}
-                        className="border-b border-slate-900/60 hover:bg-slate-900/70"
+                        className="border-b border-slate-800/40 hover:bg-white/5 transition-colors"
                       >
                         <td className="py-1.5 pr-3 text-slate-300 whitespace-nowrap">
                           {new Date(inc.occurred_at).toLocaleTimeString()}
@@ -770,7 +770,7 @@ export default function Dashboard() {
                             <button
                               onClick={() => openClaimModal(inc)}
                               disabled={savingClaimId === inc.id}
-                              className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-[11px] text-white disabled:bg-emerald-800"
+                              className="px-4 py-1.5 rounded-lg gradient-emerald text-white text-xs font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
                             >
                               {savingClaimId === inc.id ? "Saving…" : "Claim"}
                             </button>
@@ -778,13 +778,13 @@ export default function Dashboard() {
                             <button
                               onClick={() => handleMarkComplete(inc)}
                               disabled={savingClaimId === inc.id}
-                              className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-[11px] text-white disabled:bg-blue-800"
+                              className="px-4 py-1.5 rounded-lg gradient-blue text-white text-xs font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
                             >
-                              {savingClaimId === inc.id ? "Saving…" : "Mark done"}
+                              {savingClaimId === inc.id ? "Saving…" : "Done"}
                             </button>
                           ) : (
-                            <span className="text-[11px] text-slate-500">
-                              Done
+                            <span className="text-xs text-emerald-400 font-medium">
+                              ✓ Complete
                             </span>
                           )}
                         </td>
@@ -796,13 +796,13 @@ export default function Dashboard() {
             </div>
 
             {/* Map */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-                <span>Map overview</span>
-                <span>{filtered.length} incident(s)</span>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm text-slate-400 px-2">
+                <span className="font-semibold">Map overview</span>
+                <span className="text-emerald-400">{filtered.length} incident(s)</span>
               </div>
-              <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-2">
-                <div className="h-[420px] w-full rounded-lg overflow-hidden">
+              <div className="glass-strong rounded-2xl p-3 border border-slate-700/50">
+                <div className="h-[540px] w-full rounded-xl overflow-hidden">
                   {filtered.length > 0 && (
                     <MapPanel
                       incidents={filtered as any}
@@ -824,33 +824,33 @@ export default function Dashboard() {
 
       {/* Claim Modal */}
       {showClaimModal && claimingIncident && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">Claim Incident</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[9999] p-4">
+          <div className="glass-strong border border-slate-700/50 rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Claim Incident</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Incident details */}
-              <div className="border border-slate-800 bg-slate-950/60 rounded-lg p-3">
-                <p className="text-sm font-medium text-slate-100 mb-1">
+              <div className="glass rounded-xl p-4 border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent">
+                <p className="text-base font-semibold text-slate-100 mb-2">
                   {claimingIncident.road || "Unknown location"}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm text-slate-300">
                   {claimingIncident.description || "No details"}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-sm text-emerald-400 mt-2 font-medium">
                   {claimingIncident.distanceKm?.toFixed(1)} km away
                 </p>
               </div>
 
               {/* Truck selection */}
               <div>
-                <label className="block text-sm text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Select Truck <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={selectedTruckId}
                   onChange={(e) => setSelectedTruckId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                 >
                   <option value="">Choose a truck...</option>
                   {trucks.map((truck) => (
@@ -860,7 +860,7 @@ export default function Dashboard() {
                   ))}
                 </select>
                 {trucks.length === 0 && (
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-2">
                     No available trucks. Add trucks in Fleet Management.
                   </p>
                 )}
@@ -868,13 +868,13 @@ export default function Dashboard() {
 
               {/* Driver selection (optional) */}
               <div>
-                <label className="block text-sm text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Assign Driver (optional)
                 </label>
                 <select
                   value={selectedDriverId}
                   onChange={(e) => setSelectedDriverId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="w-full px-4 py-3 rounded-lg glass border border-slate-700/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                 >
                   <option value="">No driver assigned</option>
                   {drivers.map((driver) => (
@@ -884,27 +884,27 @@ export default function Dashboard() {
                   ))}
                 </select>
                 {drivers.length === 0 && (
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-2">
                     No drivers available. Add drivers in Team Management.
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-4 mt-8">
               <button
                 onClick={() => {
                   setShowClaimModal(false);
                   setClaimingIncident(null);
                 }}
-                className="flex-1 px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100"
+                className="flex-1 px-6 py-3 rounded-lg glass border border-slate-700/50 hover:bg-white/5 text-slate-100 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClaimSubmit}
                 disabled={!selectedTruckId}
-                className="flex-1 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 rounded-lg gradient-emerald text-white font-semibold shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 Claim Job
               </button>
