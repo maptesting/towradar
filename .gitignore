@@ -34,3 +34,8 @@ Thumbs.db
 # Misc
 coverage/
 .vercel
+
+# Capacitor
+android/
+ios/
+capacitor-generated/
